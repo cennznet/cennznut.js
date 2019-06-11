@@ -8,7 +8,7 @@
     "lint": "eslint ./src/* ./src/**/*"
   },
   "author": "Centrality Developers <developers@centrality.ai>",
-  "license": "UNLICENSED",
+  "license": "Apache-2.0",
   "dependencies": {
     "@polkadot/util": "^0.92.1",
     "binary-encoding-utilities": "github:cennznet/binary-encoding-utilities#v1.0.0",
