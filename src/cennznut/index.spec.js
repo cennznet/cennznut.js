@@ -24,18 +24,20 @@ const CENNZnetDomain = {
   }
 }
 
-const s = sdk.versions['0'];
-
 
 /*********
  * Tests *
  *********/
 
 describe("Encode CENNZnut", () => {
-  it("should encode a valid CENNZnut", () => {
-    const permissions = s.encode(CENNZnetDomain)
+  it("should encode a valid CENNZnut v0", () => {
+    const version = 0;
+    const permissions = sdk.encode(
+      version,
+      CENNZnetDomain
+    );
 
-    const result = s.decode(permissions);
+    const result = sdk.decode(permissions);
 
     expect(result).toEqual(CENNZnetDomain)
   });
@@ -43,7 +45,7 @@ describe("Encode CENNZnut", () => {
 
   it("should decode Rust generated permissions", () => {
     const permissions = new Uint8Array([
-      64, 160, 109, 111, 100, 117, 108, 101, 95, 116, 101, 115, 116, 0, 0, 0, 0, 0, 0,
+      0, 0, 64, 160, 109, 111, 100, 117, 108, 101, 95, 116, 101, 115, 116, 0, 0, 0, 0, 0, 0,
       0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 138, 128, 0, 128, 109, 101, 116, 104,
       111, 100, 95, 116, 101, 115, 116, 50, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
       0, 0, 0, 0, 130, 128, 0, 0, 128, 109, 101, 116, 104, 111, 100, 95, 116, 101, 115, 116,
@@ -55,7 +57,7 @@ describe("Encode CENNZnut", () => {
       0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 222, 0, 0, 0
     ]);
 
-    const result = s.decode(permissions);
+    const result = sdk.decode(permissions);
 
     expect(result).toEqual({
       modules:
