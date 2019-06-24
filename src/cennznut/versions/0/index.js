@@ -159,7 +159,7 @@ function encode(permissionsJSON) {
 
   let cursor = 0;
   numberToLEBytes(
-    MODULES_COUNT,
+    MODULES_COUNT - 1,
     permissions,
     MODULE_COUNT_BYTE_LENGTH,
     cursor
@@ -255,7 +255,7 @@ function decode(permissions) {
     permissions,
     MODULE_COUNT_BYTE_LENGTH,
     cursor,
-  );
+  ) + 1;
   cursor += MODULE_COUNT_BYTE_LENGTH;
 
   if (MODULES_COUNT) {
