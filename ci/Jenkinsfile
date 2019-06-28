@@ -1,0 +1,70 @@
+#!groovy
+pipeline {
+    agent {
+        label 'linux'
+    }
+
+    environment {
+        SERVICE_NAME = 'cennznut-js'
+        IMAGE_NAME = "centrality/${SERVICE_NAME}-build:1.0.${BUILD_NUMBER}"
+        GIT_NAME = 'Jenkins'
+        GIT_EMAIL = 'jenkins@centrality.ai'
+        PUBLISH_IMAGE_NAME = "centrality/${SERVICE_NAME}:1.0.${BUILD_NUMBER}"
+        LAST_COMMIT_AUTHOR = sh(script: "git log -1 --pretty=format:'%an'", returnStdout: true).trim()
+        AWS_ACCESS_KEY = credentials('TF_AWS_ACCESS_KEY')
+        AWS_SECRET_KEY = credentials('TF_AWS_SECRET_KEY')
+    }
+
+    stages {
+        stage('Build') {
+            environment {
+                GEMFURY_TOKEN = credentials('GEMFURY_TOKEN')
+            }
+            steps {
+                sh "docker build --build-arg GEMFURY_TOKEN=$GEMFURY_TOKEN \
+                    -f ./ci/Dockerfile \
+                    -t $SERVICE_NAME ."
+            }
+        }
+
+        stage('Lint') {
+            steps {
+                sh 'docker run $SERVICE_NAME npm run lint'
+            }
+        }
+
+        stage('Test') {
+            steps {
+                sh 'docker run -e GEMFURY_TOKEN=$GEMFURY_TOKEN $SERVICE_NAME npm test'
+            }
+        }
+
+        stage('Confirm Publish') {
+           steps {
+               timeout(time: 30, unit: 'MINUTES') {
+                   input "Confirm publish?"
+               }
+           }
+        }
+
+        stage('Publish to Gemfury') {
+            environment {
+                GEMFURY_TOKEN = credentials('GEMFURY_TOKEN')
+            }
+            steps {
+                sh "docker run -e GEMFURY_TOKEN=$GEMFURY_TOKEN \
+                    -v \$(pwd)/ci/:/opt/ci \
+                    -v \$(pwd):/usr/local/src/$SERVICE_NAME \
+                    $SERVICE_NAME \
+                    /opt/ci/publish.sh /usr/local/src/$SERVICE_NAME"
+            }
+        }
+    }
+
+    post {
+        always {
+            echo "pipeline post always"
+            sh 'bash /mnt/jenkins/script/cleanup.sh'
+        }
+    }
+}
