@@ -1,0 +1,40 @@
+{
+  "name": "@cennznet/cennznut",
+  "version": "1.0.0",
+  "description": "`CENNZnut.js` implements the [Doughnut](https://github.com/cennznet/doughnut-paper) protocol [CENNZnet Permission Domain](https://github.com/cennznet/doughnut-paper/blob/master/CENNZnet_format.md) in JavaScript.",
+  "main": "src/index.js",
+  "scripts": {
+    "test": "jest",
+    "lint": "eslint ./src/* ./src/**/*"
+  },
+  "author": "Centrality Developers <developers@centrality.ai>",
+  "license": "Apache-2.0",
+  "dependencies": {
+    "@polkadot/util": "^0.92.1",
+    "@plugnet/binary-encoding-utilities": "^1.0.0",
+    "jest": "^24.7.1"
+  },
+  "devDependencies": {
+    "eslint": "^5.16.0",
+    "eslint-plugin-jest": "^22.5.1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/cennznet/cennznut.js.git"
+  },
+  "keywords": [
+    "doughnut",
+    "cennznet",
+    "permission",
+    "domain",
+    "SSO",
+    "decentralised",
+    "proof",
+    "of",
+    "delegation"
+  ],
+  "bugs": {
+    "url": "https://github.com/cennznet/cennznut.js/issues"
+  },
+  "homepage": "https://github.com/cennznet/cennznut.js#readme"
+}
