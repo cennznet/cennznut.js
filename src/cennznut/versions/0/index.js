@@ -9,6 +9,7 @@ const MODULE_COUNT_BYTE_LENGTH = 1;
 const BLOCK_COOLDOWN_BYTE_LENGTH = 4;
 const MAX_MODULE_COUNT = 257;
 const MAX_METHOD_COUNT = 127;
+const MAX_CONSTRAINTS_COUNT = 127;
 const MAX_BLOCK_COOLDOWN = Math.pow(2, BLOCK_COOLDOWN_BYTE_LENGTH * 8);
 
 const { stringToU8a } = require("@polkadot/util");
@@ -77,6 +78,13 @@ function verifyJSON(permissions) {
       Object.keys(module.methods)
         .forEach((methodName) => {
           const method = module.methods[methodName];
+
+          if ("constraints" in method && method.constraints.length > 1) {
+            throw new Error(
+              `Module "${moduleName}"'s method "${methodName}" ` +
+              `has more constraints than the allowed ${MAX_CONSTRAINTS_COUNT}`
+            )
+          }
 
           normaliseBlockCooldown(
             method,
@@ -359,4 +367,6 @@ function decode(permissions) {
 module.exports = {
   encode,
   decode,
+  MAX_BLOCK_COOLDOWN,
+  MAX_CONSTRAINTS_COUNT,
 }
