@@ -71,6 +71,33 @@ describe("Encode CENNZnut", () => {
       `Module "generic-asset"'s method "transfer" has more constraints than ` +
       `the allowed ${cennznut.MAX_CONSTRAINTS_COUNT}`);
   });
+
+  it("encodes with constraints", () => {
+    const encoded_test = new Uint8Array([
+      0, 64, 109, 111, 100, 117, 108, 101, 95, 116, 101, 115, 116, 0, 0, 0, 0,
+      0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 74, 109, 101, 116,
+      104, 111, 100, 95, 116, 101, 115, 116, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+      0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 192, 128, 16, 246, 0, 0, 0, 0, 0, 0, 0,
+      128, 16, 178, 128, 0, 0, 0, 0, 0, 0, 0, 224, 116, 101, 115, 116, 105,
+      110, 103, 5, 0, 0, 1, 0, 5, 0, 1, 1, 1
+    ]).toString();
+    const encoded_live = cennznut.encode({
+      "modules": {
+        "module_test": {
+          "methods": {
+            "method_test": {
+              "constraints": [
+                0, 192, 128, 16, 246, 0, 0, 0, 0, 0, 0, 0, 128, 16, 178, 128, 0,
+                0, 0, 0, 0, 0, 0, 224, 116, 101, 115, 116, 105, 110, 103, 5, 0,
+                0, 1, 0, 5, 0, 1, 1, 1,
+              ]
+            }
+          }
+        }
+      }
+    }).toString();
+    expect(encoded_live).toEqual(encoded_test);
+  });
 });
 
 describe("Decode CENNZnut", () => {

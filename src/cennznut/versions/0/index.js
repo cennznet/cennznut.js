@@ -18,6 +18,7 @@ const {
   numberToLEBytes,
   LEBytesToNumber,
   getStringFromU8a,
+  flipEndianness,
 } = require("@plugnet/binary-encoding-utilities");
 
 function normaliseBlockCooldown(
@@ -79,7 +80,10 @@ function verifyJSON(permissions) {
         .forEach((methodName) => {
           const method = module.methods[methodName];
 
-          if ("constraints" in method && method.constraints.length > 1) {
+          if (
+            method.constraints
+            && method.constraints.length > MAX_CONSTRAINTS_COUNT
+          ) {
             throw new Error(
               `Module "${moduleName}"'s method "${methodName}" ` +
               `has more constraints than the allowed ${MAX_CONSTRAINTS_COUNT}`
@@ -159,6 +163,9 @@ function encode(permissionsJSON) {
       if (hasBlockCooldown) {
         PERMISSIONS_BYTE_LENGTH += BLOCK_COOLDOWN_BYTE_LENGTH;
       }
+      if (method.constraints && method.constraints.length > 0) {
+        PERMISSIONS_BYTE_LENGTH += method.constraints.length;
+      }
     },
   );
 
@@ -224,6 +231,16 @@ function encode(permissionsJSON) {
         permissions[cursor] |= (1 << 7);
       }
 
+      const hasConstraints = (
+        method.constraints
+        && method.constraints.length > 0
+      )
+
+      if (hasConstraints) {
+        const constraints_count = flipEndianness(method.constraints.length);
+        permissions[cursor] |= (constraints_count >> 1);
+      }
+
       // increment cursor past meta data byte
       cursor += METHOD_META_DATA_BYTE_LENGTH;
 
@@ -242,11 +259,15 @@ function encode(permissionsJSON) {
         );
         cursor += BLOCK_COOLDOWN_BYTE_LENGTH;
       }
+
+      if (hasConstraints) {
+        permissions.set(method.constraints, cursor)
+      }
     }
     /* END METHOD ENCODING */
   );
 
-    return permissions;
+  return permissions;
 }
 
 function decode(permissions) {
