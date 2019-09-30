@@ -26,8 +26,8 @@ npm run lint
 
 ```
 Interface {
-	encode: encodePermissions,
-	decode: decodePermissions
+    encode: encodePermissions,
+    decode: decodePermissions
 }
 ```
 
@@ -45,7 +45,12 @@ Object {
             "blockCooldown": 5
             "methods": {
                 "<METHOD_NAME>": {
-                    "blockCooldown": 5
+                    "blockCooldown": 5,
+                    "constraints"": [
+                        0, 192, 128, 16, 246, 0, 0, 0, 0, 0, 0, 0, 128, 16,
+                        178, 128, 0, 0, 0, 0, 0, 0, 0, 224, 116, 101, 115, 116,
+                        105, 110, 103, 5, 0, 0, 1, 0, 5, 0, 1, 1, 1
+                    ]
                 },
                 ...
             }
@@ -79,7 +84,7 @@ Decode the JSON representation. Returns a `CENNZnetPermissionsObject` if valid.
 
 ```
 decodePermissions(
-	permissions: Uint8Array
+    permissions: Uint8Array
 ) -> Object
 ```
 
