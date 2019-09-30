@@ -17,7 +17,7 @@ const {
   numberToLEBytes,
   LEBytesToNumber,
   getStringFromU8a,
-} = require("binary-encoding-utilities");
+} = require("@plugnet/binary-encoding-utilities");
 
 function normaliseBlockCooldown(
   obj,
