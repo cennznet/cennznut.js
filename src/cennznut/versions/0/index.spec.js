@@ -58,7 +58,7 @@ describe("Encode CENNZnut", () => {
   });
 
   it("encodes with valid number of constraints", () => {
-    const constraints = new Array(cennznut.MAX_CONSTRAINTS_COUNT + 1);
+    const constraints = new Array(cennznut.MAX_CONSTRAINTS_BYTE_LENGTH + 1);
     expect(() => {
       cennznut.encode({
         "modules": {
@@ -69,19 +69,19 @@ describe("Encode CENNZnut", () => {
       })
     }).toThrow(
       `Module "generic-asset"'s method "transfer" has more constraints than ` +
-      `the allowed ${cennznut.MAX_CONSTRAINTS_COUNT}`);
+      `the allowed ${cennznut.MAX_CONSTRAINTS_BYTE_LENGTH}`);
   });
 
   it("encodes with constraints", () => {
-    const encoded_test = new Uint8Array([
+    const encodedTest = new Uint8Array([
       0, 64, 109, 111, 100, 117, 108, 101, 95, 116, 101, 115, 116, 0, 0, 0, 0,
-      0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 74, 109, 101, 116,
+      0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 64, 109, 101, 116,
       104, 111, 100, 95, 116, 101, 115, 116, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-      0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 192, 128, 16, 246, 0, 0, 0, 0, 0, 0, 0,
-      128, 16, 178, 128, 0, 0, 0, 0, 0, 0, 0, 224, 116, 101, 115, 116, 105,
-      110, 103, 5, 0, 0, 1, 0, 5, 0, 1, 1, 1
+      0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 148, 0, 192, 128, 16, 246, 0, 0, 0, 0, 0,
+      0, 0, 128, 16, 178, 128, 0, 0, 0, 0, 0, 0, 0, 224, 116, 101, 115, 116,
+      105, 110, 103, 5, 0, 0, 1, 0, 5, 0, 1, 1, 1
     ]).toString();
-    const encoded_live = cennznut.encode({
+    const encodedLive = cennznut.encode({
       "modules": {
         "module_test": {
           "methods": {
@@ -96,7 +96,7 @@ describe("Encode CENNZnut", () => {
         }
       }
     }).toString();
-    expect(encoded_live).toEqual(encoded_test);
+    expect(encodedLive).toEqual(encodedTest);
   });
 });
 
@@ -111,5 +111,20 @@ describe("Decode CENNZnut", () => {
       const encoded = new Uint8Array([128,64,103,101,110,101,114,105,99,45,97,115,115,101,116,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,116,114,97,110,115,102,101,114,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,64,97,116,116,101,115,116,97,116,105,111,110,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,99,114,101,97,116,101,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]);
       let c = cennznut.decode(encoded);
       expect(Object.keys(c.modules).length).toEqual(2);
+  });
+  
+  it("decodes with constraints", () => {
+    const encoded = new Uint8Array([0,64,109,111,100,117,108,101,95,116,101,115,116,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,64,109,101,116,104,111,100,95,116,101,115,116,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,148,0,192,128,16,246,0,0,0,0,0,0,0,128,16,178,128,0,0,0,0,0,0,0,224,116,101,115,116,105,110,103,5,0,0,1,0,5,0,1,1,1]);
+    let rawNut = cennznut.decode(encoded);
+    let constraintsDecoded = rawNut
+      .modules["module_test"]
+      .methods["method_test"]
+      .constraints.toString();
+    let constraints = new Uint8Array([
+      0, 192, 128, 16, 246, 0, 0, 0, 0, 0, 0, 0, 128, 16, 178, 128,
+      0, 0, 0, 0, 0, 0, 0, 224, 116, 101, 115, 116, 105, 110, 103, 5,
+      0, 0, 1, 0, 5, 0, 1, 1, 1,
+    ]).toString();
+    expect(constraintsDecoded).toEqual(constraints);
   });
 });

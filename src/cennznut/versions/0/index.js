@@ -7,9 +7,10 @@ const METHOD_META_DATA_BYTE_LENGTH = 1;
 const KEY_BYTE_LENGTH = 32;
 const MODULE_COUNT_BYTE_LENGTH = 1;
 const BLOCK_COOLDOWN_BYTE_LENGTH = 4;
+const CONSTRAINTS_LENGTH_BYTE_LENGTH = 1;
 const MAX_MODULE_COUNT = 257;
 const MAX_METHOD_COUNT = 127;
-const MAX_CONSTRAINTS_COUNT = 127;
+const MAX_CONSTRAINTS_BYTE_LENGTH = 257;
 const MAX_BLOCK_COOLDOWN = Math.pow(2, BLOCK_COOLDOWN_BYTE_LENGTH * 8);
 
 const { stringToU8a } = require("@polkadot/util");
@@ -37,6 +38,29 @@ function normaliseBlockCooldown(
 
   if (obj.blockCooldown > MAX_BLOCK_COOLDOWN) {
     throw new Error(tooLargeMsg);
+  }
+}
+
+function verifyConstraints(method, moduleName, methodName) {
+  if (method.constraints) {
+    if (!Array.isArray(method.constraints)) {
+      throw new Error(
+        `Module "${moduleName}"'s method "${methodName}" ` +
+        `has invalid constraints specified`
+      )
+    }
+    if (method.constraints.length == 0) {
+      throw new Error(
+        `Module "${moduleName}"'s method "${methodName}" ` +
+        `has no constraints specified`
+      )
+    }
+    if (method.constraints.length > MAX_CONSTRAINTS_BYTE_LENGTH) {
+      throw new Error(
+        `Module "${moduleName}"'s method "${methodName}" ` +
+        `has more constraints than the allowed ${MAX_CONSTRAINTS_BYTE_LENGTH}`
+      )
+    }
   }
 }
 
@@ -79,17 +103,7 @@ function verifyJSON(permissions) {
       Object.keys(module.methods)
         .forEach((methodName) => {
           const method = module.methods[methodName];
-
-          if (
-            method.constraints
-            && method.constraints.length > MAX_CONSTRAINTS_COUNT
-          ) {
-            throw new Error(
-              `Module "${moduleName}"'s method "${methodName}" ` +
-              `has more constraints than the allowed ${MAX_CONSTRAINTS_COUNT}`
-            )
-          }
-
+          verifyConstraints(method, moduleName, methodName);
           normaliseBlockCooldown(
             method,
             `Module "${moduleName}"'s method "${methodName}" has an invalid "blockCooldown": "${method.blockCooldown}"`,
@@ -163,7 +177,8 @@ function encode(permissionsJSON) {
       if (hasBlockCooldown) {
         PERMISSIONS_BYTE_LENGTH += BLOCK_COOLDOWN_BYTE_LENGTH;
       }
-      if (method.constraints && method.constraints.length > 0) {
+      if (method.constraints) {
+        PERMISSIONS_BYTE_LENGTH += CONSTRAINTS_LENGTH_BYTE_LENGTH;
         PERMISSIONS_BYTE_LENGTH += method.constraints.length;
       }
     },
@@ -231,14 +246,8 @@ function encode(permissionsJSON) {
         permissions[cursor] |= (1 << 7);
       }
 
-      const hasConstraints = (
-        method.constraints
-        && method.constraints.length > 0
-      )
-
-      if (hasConstraints) {
-        const constraints_count = flipEndianness(method.constraints.length);
-        permissions[cursor] |= (constraints_count >> 1);
+      if (method.constraints) {
+        permissions[cursor] |= (1 << 6);
       }
 
       // increment cursor past meta data byte
@@ -260,7 +269,9 @@ function encode(permissionsJSON) {
         cursor += BLOCK_COOLDOWN_BYTE_LENGTH;
       }
 
-      if (hasConstraints) {
+      if (method.constraints) {
+        permissions[cursor] = flipEndianness(method.constraints.length);
+        cursor += CONSTRAINTS_LENGTH_BYTE_LENGTH;
         permissions.set(method.constraints, cursor)
       }
     }
@@ -347,9 +358,12 @@ function decode(permissions) {
       i < METHODS_COUNT;
       i++
     ) {
-        // get methodHasBlockCooldown
+        // get methodHasBlockCooldown & methodHasConstraints
         const methodHasBlockCooldown = (
           (permissions[cursor] & (1 << 7)) != 0
+        );
+        const methodHasConstraints = (
+          (permissions[cursor] & (1 << 6)) != 0
         );
         cursor += METHOD_META_DATA_BYTE_LENGTH;
 
@@ -376,6 +390,26 @@ function decode(permissions) {
         } else {
           methods[methodName].blockCooldown = 0;
         }
+
+        // set constraints if needed
+        if (methodHasConstraints) {
+          const constraintsLength = LEBytesToNumber(
+            permissions,
+            CONSTRAINTS_LENGTH_BYTE_LENGTH,
+            cursor,
+          );
+          cursor += CONSTRAINTS_LENGTH_BYTE_LENGTH;
+
+          methods[methodName].constraints = Array.from(
+            permissions.slice(
+              cursor,
+              cursor + constraintsLength,
+            )
+          );
+          cursor += constraintsLength;
+        } else {
+          methods[methodName].constraints = [];
+        }
     }
     /* END READ METHODS */
 
@@ -389,5 +423,5 @@ module.exports = {
   encode,
   decode,
   MAX_BLOCK_COOLDOWN,
-  MAX_CONSTRAINTS_COUNT,
+  MAX_CONSTRAINTS_BYTE_LENGTH,
 }
