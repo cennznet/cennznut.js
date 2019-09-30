@@ -3,7 +3,7 @@
  ********************/
 const {
   flipEndianness,
-} = require("binary-encoding-utilities");
+} = require("@plugnet/binary-encoding-utilities");
 
 const VERSION_MASK = 0b1111111111000000;
 const VERSION_BYTE_LENGTH = 2;
