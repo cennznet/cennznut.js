@@ -46,7 +46,7 @@ function verifyConstraints(method, moduleName, methodName) {
     if (!Array.isArray(method.constraints)) {
       throw new Error(
         `Module "${moduleName}"'s method "${methodName}" ` +
-        `has invalid constraints specified`
+        `has invalid constraints specified (expected an Array)`
       )
     }
     if (method.constraints.length == 0) {
