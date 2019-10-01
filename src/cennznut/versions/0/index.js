@@ -407,8 +407,6 @@ function decode(permissions) {
             )
           );
           cursor += constraintsLength;
-        } else {
-          methods[methodName].constraints = [];
         }
     }
     /* END READ METHODS */
