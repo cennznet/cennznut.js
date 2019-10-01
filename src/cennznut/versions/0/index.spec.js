@@ -68,8 +68,9 @@ describe("Encode CENNZnut", () => {
         }
       })
     }).toThrow(
-      `Module "generic-asset"'s method "transfer" has more constraints than ` +
-      `the allowed ${cennznut.MAX_CONSTRAINTS_BYTE_LENGTH}`);
+      `Module "generic-asset"'s method "transfer": ` +
+      `constraints length must be <= ${cennznut.MAX_CONSTRAINTS_BYTE_LENGTH}`
+    );
   });
 
   it("encodes with constraints", () => {

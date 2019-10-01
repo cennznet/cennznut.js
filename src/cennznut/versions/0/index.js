@@ -43,23 +43,21 @@ function normaliseBlockCooldown(
 
 function verifyConstraints(method, moduleName, methodName) {
   if (method.constraints) {
+    const msg = `Module "${moduleName}"'s method "${methodName}": `
     if (!Array.isArray(method.constraints)) {
       throw new Error(
-        `Module "${moduleName}"'s method "${methodName}" ` +
-        `has invalid constraints specified (expected an Array)`
-      )
+        msg + `an array was expected for constraints`
+      );
     }
     if (method.constraints.length == 0) {
       throw new Error(
-        `Module "${moduleName}"'s method "${methodName}" ` +
-        `has no constraints specified`
-      )
+        msg + `no constraints were specified`
+      );
     }
     if (method.constraints.length > MAX_CONSTRAINTS_BYTE_LENGTH) {
       throw new Error(
-        `Module "${moduleName}"'s method "${methodName}" ` +
-        `has more constraints than the allowed ${MAX_CONSTRAINTS_BYTE_LENGTH}`
-      )
+        msg + `constraints length must be <= ${MAX_CONSTRAINTS_BYTE_LENGTH}`
+      );
     }
   }
 }
