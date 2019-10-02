@@ -19,7 +19,6 @@ const {
   numberToLEBytes,
   LEBytesToNumber,
   getStringFromU8a,
-  flipEndianness,
 } = require("@plugnet/binary-encoding-utilities");
 
 function normaliseBlockCooldown(
@@ -239,11 +238,12 @@ function encode(permissionsJSON) {
     /* METHOD ENCODING */
     },
     (module, moduleName, method, methodName) => {
-      // set has_block_cooldown
+      // set has_block_cooldown (on the 1st bit of method meta data byte)
       if (method.blockCooldown) {
         permissions[cursor] |= (1 << 7);
       }
 
+      // set has_constraints (on the 2nd bit of method meta data byte)
       if (method.constraints) {
         permissions[cursor] |= (1 << 6);
       }
@@ -267,10 +267,22 @@ function encode(permissionsJSON) {
         cursor += BLOCK_COOLDOWN_BYTE_LENGTH;
       }
 
+      // if has_constraints
       if (method.constraints) {
-        permissions[cursor] = flipEndianness(method.constraints.length);
+        // set constraints (byte array) length
+        numberToLEBytes(
+          method.constraints.length - 1,
+          permissions,
+          CONSTRAINTS_LENGTH_BYTE_LENGTH,
+          cursor,
+        );
+        // increment cursor past constraints length byte
         cursor += CONSTRAINTS_LENGTH_BYTE_LENGTH;
+
+        // set constraints
         permissions.set(method.constraints, cursor)
+        // increment cursor past the length of the set constraints
+        cursor += method.constraints.length;
       }
     }
     /* END METHOD ENCODING */
@@ -356,10 +368,11 @@ function decode(permissions) {
       i < METHODS_COUNT;
       i++
     ) {
-        // get methodHasBlockCooldown & methodHasConstraints
+        // get methodHasBlockCooldown
         const methodHasBlockCooldown = (
           (permissions[cursor] & (1 << 7)) != 0
         );
+        // get methodHasConstraints
         const methodHasConstraints = (
           (permissions[cursor] & (1 << 6)) != 0
         );
@@ -391,11 +404,12 @@ function decode(permissions) {
 
         // set constraints if needed
         if (methodHasConstraints) {
-          const constraintsLength = LEBytesToNumber(
-            permissions,
-            CONSTRAINTS_LENGTH_BYTE_LENGTH,
-            cursor,
-          );
+          const constraintsLength =
+            LEBytesToNumber(
+              permissions,
+              CONSTRAINTS_LENGTH_BYTE_LENGTH,
+              cursor,
+            ) + 1;
           cursor += CONSTRAINTS_LENGTH_BYTE_LENGTH;
 
           methods[methodName].constraints = Array.from(
@@ -420,4 +434,8 @@ module.exports = {
   decode,
   MAX_BLOCK_COOLDOWN,
   MAX_CONSTRAINTS_BYTE_LENGTH,
+  MODULE_COUNT_BYTE_LENGTH,
+  MODULE_META_DATA_BYTE_LENGTH,
+  METHOD_META_DATA_BYTE_LENGTH,
+  KEY_BYTE_LENGTH,
 }
