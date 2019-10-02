@@ -1,4 +1,5 @@
 # CENNZnut.js
+[![CircleCI](https://circleci.com/gh/cennznet/cennznut.js.svg?style=svg)](https://circleci.com/gh/cennznet/cennznut.js)
 
 `CENNZnut.js` implements the [Doughnut](https://github.com/cennznet/doughnut-paper) protocol [CENNZnet Permission Domain](https://github.com/cennznet/doughnut-paper/blob/master/CENNZnet_format.md) in JavaScript.
 
@@ -87,4 +88,3 @@ decodePermissions(
     permissions: Uint8Array
 ) -> Object
 ```
-
