@@ -19,7 +19,6 @@ const {
   numberToLEBytes,
   LEBytesToNumber,
   getStringFromU8a,
-  flipEndianness,
 } = require("@plugnet/binary-encoding-utilities");
 
 function normaliseBlockCooldown(
