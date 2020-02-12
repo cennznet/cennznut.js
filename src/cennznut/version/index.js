@@ -1,3 +1,5 @@
+// Copyright 2019-2020 Centrality Investments Limited
+
 /********************
  * Version Encoding *
  ********************/
